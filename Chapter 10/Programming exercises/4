@@ -1,0 +1,30 @@
+//find the index of the largest value in array-of-double
+#include <stdio.h>
+int max_value_index( double arr[], int n );
+int main(void)
+{
+double arr[8] = {1.2, 2.3, 3.4, 4.5, 5.6};
+printf("The index of the max value of array is %d \n", max_value_index(arr, 8));
+
+return 0;
+}
+
+//find the index of largest value
+int max_value_index( double arr[], int n )
+{
+    int i;
+    int maxval_index;
+    double max_val = arr[0];
+    for(i = 0; i < n; i++)
+    {
+        if(max_val < arr[i])
+        {
+            max_val = arr[i];
+            maxval_index = i;
+        }
+
+    }
+    printf("max value is %f\n", max_val);
+
+    return maxval_index;
+}
