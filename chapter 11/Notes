@@ -1,3 +1,4 @@
 This chapter discusses the nature of strings, how to declare and initialize strings, how to get them into and out of programs, and how to manipulate strings.
+
 # Representing Strings and String I/O
 ## Defining strings within a program
