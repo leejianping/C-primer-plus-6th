@@ -1,0 +1,20 @@
+// Return min (x,y)
+#include <stdio.h>
+double min(double x, double y);
+int main(void)
+{
+    double x, y, min_num;
+    printf("Please enter two double numbers x, y: \n");
+    scanf("%lf %lf", &x, &y); // scanf("%lf %lf \n", &x, &y) 无法输入y的值
+    printf("x is %lf \n",x);
+    printf("y is %lf \n",y);
+    min_num = min(x,y);
+    printf("The min num is : %f.", min_num);
+return  0;
+}
+double min(double a, double b)
+{
+    double min_num;
+    min_num = a<b ? a : b;
+    return min_num;
+}
