@@ -1,0 +1,48 @@
+#include <stdio.h>
+void three_sort(double *i, double *j, double *k);
+int main(void)
+{
+double i, j, k;
+double *p1, *p2, *p3;
+p1 = &i;
+p2 = &j;
+p3 = &k;
+printf("Please input three numbers: \n");
+scanf("%lf %lf %lf", &i, &j, &k);
+printf("Before sort i j k is : %f, %f, %f \n", i, j, k);
+three_sort(p1, p2, p3);
+printf("After sort i j k is : %f, %f, %f \n", i, j, k);
+}
+
+void three_sort(double *m, double *n, double *p)
+{
+   double temp, min, mid, max;
+   min = *m;
+   if(min > *n)
+    min = *n;
+   if(min > *p)
+    min = *p;
+   printf("min %f \n", min);
+
+   max = *m;
+   if(max < *n)
+    max = *n;
+   if(max < *p)
+    max = *p;
+    printf("max %f \n", max);
+
+   if(min < *m & *m < max)
+    {mid = *m;}
+   if(min < *n &  *n < max) // if(min < *n < max) 写法不对
+    {mid = *n;}
+
+   if(min < *p & *p < max)
+    {mid = *p;}
+    printf("mid %f \n", mid);
+
+   *m = min;
+   *n = mid;
+   *p = max;
+
+
+}
