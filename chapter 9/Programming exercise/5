@@ -1,0 +1,28 @@
+//replaces the content
+#include <stdio.h>
+void larger_of(double *i, double *j);
+int main(viod)
+{  double m,n;
+   double *p1, *p2;
+   p1 = &m;
+   p2= &n;
+    printf("Please input the two numbers : \n");
+    scanf("%lf %lf", &m, &n);
+    printf("Before larger_of m and n is: %f, %f \n", *p1, *p2);
+    larger_of(p1,p2);
+    printf("After larger_of m and n is: %f, %f \n", *p1, *p2);
+}
+
+void larger_of(double *m, double *n)
+{
+    double maxnum;
+     if(*m > *n)
+     {
+
+         *n = *m; //  n = m 为什么不行？
+     }
+     else
+        *m = *n;
+
+
+}
