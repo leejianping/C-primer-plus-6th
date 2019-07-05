@@ -1,0 +1,20 @@
+//harmonic mean
+
+#include <stdio.h>
+double harmonic_mean(double i, double j);
+int main(void)
+{
+    double i, j;
+    printf("Please input two numbers: \n");
+    scanf("%lf %lf", &i, &j);
+    printf("The harmonic mean of %f and %f is: %f", i, j, harmonic_mean(i,j));
+
+
+}
+
+double harmonic_mean(double m, double n)
+{
+    double hmean;
+    hmean = 1/((1/m +1/n)/2);
+    return hmean;
+}
