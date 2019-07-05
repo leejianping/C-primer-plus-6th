@@ -1,0 +1,37 @@
+/* prints the requested character in
+columns i through j */
+
+#include <stdio.h>
+#include <string.h>
+void chline(char *ch, int i, int j);
+void main(void)
+{
+int i,j;
+char *input_char =  "hello world, I am a robot";
+printf("please input the columns i through j \n");
+//scanf("%d %d", &i, &j);
+printf("%d \n", i);
+printf("%d \n", j);
+for(i= 0; i++; i<6)
+{
+    putchar(input_char[i]);
+}
+
+//chline(input_char, i , j);
+
+return 0;
+
+}
+
+void chline(char *c, int m, int n)
+{
+
+    int i = 0;
+    for(i = m; i++; i <n+1)
+    {
+      putchar(c[i]);
+
+    }
+
+return 0;
+}
