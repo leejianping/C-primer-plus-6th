@@ -1,0 +1,60 @@
+#include <stdio.h>
+void three_sort(double *i, double *j, double *k);
+int main(void)
+{
+double i, j, k;
+double *p1, *p2, *p3;
+p1 = &i;
+p2 = &j;
+p3 = &k;
+printf("Please input three numbers: \n");
+scanf("%lf %lf %lf", &i, &j, &k);
+printf("Before sort i j k is : %f, %f, %f \n", i, j, k);
+three_sort(p1, p2, p3);
+printf("After sort i j k is : %f, %f, %f \n", i, j, k);
+}
+
+void three_sort(double *m, double *n, double *p)
+{
+   double temp;
+    if(*m < *n)
+    {
+        if(*p > *n)
+            ;
+            else
+                if(*p < *m)
+                {
+                  temp = *m;
+                   *m = *p;
+                  *p = *n;
+                  *n = temp;
+
+                }
+                else
+                {
+                  temp = *p;
+                  *p = *n;
+                  *n = temp;
+                }
+    }
+    else
+        if(*p < *n)
+    {
+        temp = *m;
+        *m = *p;
+        *p = temp;
+    }
+    else
+        if (*p > *m)
+    {
+        temp = *m;
+        *m = *n;
+        *n = temp;
+    }else
+    {
+        temp = *m;
+        *m = *n;
+        *n = *p;
+        *p = temp;
+    }
+}
