@@ -1,1 +1,29 @@
+//fetch the next n characters from input
+#include<stdio.h>
+#define STLEN 20
+int next_n(char next[], int n);
+int main(void)
+{
+int n = 3;
+char next[STLEN];
+ next_n(next, n);
+ puts(next);
+
+}
+
+int next_n(char next[], int n)
+{
+    int i = 0;
+    char *p;
+    char word[20];
+    puts("Please input the string less than 19:");
+    fgets(word, STLEN, stdin);
+    p = word;
+    while(word[i] != '\0')
+    {
+        next[i] = *(p +n + i );
+        i++;
+    }
+    return 0;
+}
 
