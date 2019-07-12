@@ -59,9 +59,8 @@ are stored in memory as a character string.
   const char m1[40] = "Limit yourself to one line's worth.";
   
   This form of initialization is short for the standard array initialization form:
-  const char m1[40] = { 'L',
-   'i', 'm', 'i', 't', ' ', 'y', 'o', 'u', 'r', 's', 'e', 'l',
-   'f', ' ', 't', 'o', ' ', 'o', 'n', 'e', ' ',
+  const char m1[40] = { 'L','i', 'm', 'i', 't', ' ', 'y', 'o', 'u', 'r', 's', 'e', 'l',
+     'f', ' ', 't', 'o', ' ', 'o', 'n', 'e', ' ',
     'l', 'i', 'n', 'e', '\", 's', ' ', 'w', 'o', 'r',
     't', 'h', '.', '\0'
      };
