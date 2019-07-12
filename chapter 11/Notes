@@ -17,7 +17,7 @@ The principal ways to define a string are using string constants, usning char ar
 
 ##### character string literals (string constants)
 
-1. A string literal, also termed a string constant, is anything enclosed in double quotation marks.
+A string literal, also termed a string constant, is anything enclosed in double quotation marks.
 The enclosed characters, plus a terminating \0 character automatically provided by the compiler,
 are stored in memory as a character string. 
 
@@ -25,20 +25,70 @@ are stored in memory as a character string.
       " I am a symbolic string constant"     (display)
       " I am a symbolic string constant\0"   (store in memory)
 
-2. C concatenates string literals if they are seperated by nothing or by whitespace.
+1. C concatenates string literals if they are seperated by nothing or by whitespace.
 
     Eg: 
        char greeting[50] = "Hello, and"" how are"    " you"" today!";
        is equivalent to this:
        char greeting[50] = "Hello, and how are you today!";
        
-3. If you want to use a double quotation mark within a string, precede the quotation mark with a
+2. If you want to use a double quotation mark within a string, precede the quotation mark with a
    backslash, as follows:
    
      printf("\"Run, Spot, run!\" exclaimed Dick.\n");
      This produces the following output:
      "Run, Spot, run!" exclaimed Dick.
+ 3. character string constants are placed in static storage class, which means that if you use a string
+    constant in a function, the string is stored just once and lasts for the duration of the program,
+    even if the function is called several times. The entire quoted phrase ascts as a pointer to where 
+    the string is stored, similar to the name of an array.
+    Eg:
+     #include <stdio.h>
+      int main(void)
+      {
+        printf("%s, %p, %c\n", "We", "are", *"space farers");
+        return 0;
+       }
+       The output is:
+       We, 0x00000f61, s
  
+ ##### Character string arrays and initilization
+ 
+1.  When you define a character string array, you must let the compiler know how much space is needed.
+ Eg: 
+  const char m1[40] = "Limit yourself to one line's worth.";
+  
+  This form of initialization is short for the standard array initialization form:
+  const char m1[40] = { 'L',
+   'i', 'm', 'i', 't', ' ', 'y', 'o', 'u', 'r', 's', 'e', 'l',
+   'f', ' ', 't', 'o', ' ', 'o', 'n', 'e', ' ',
+    'l', 'i', 'n', 'e', '\", 's', ' ', 'w', 'o', 'r',
+    't', 'h', '.', '\0'
+     };
+     Note the closing null character. without it, you have a character array, but not a string.
+   Eg:
+    const char m2[] = "If you can't think of anything, fake it.";
+    Letting the compiler compute the size of the array works only if you initialize the array.
+ 
+ 2. Indeed, you can use pointer notation to set up  a string.
+    
+    const char *pt1 = "something is pointing at me.";
+    const char ar1[] = "something is pointing at me"
+    Both pt1 and ar1 are address of strings.
+    
+    
+    
+    
+    
+     
+    
+     
+     
+  
+       
+       
+       
+    
  
        
     
