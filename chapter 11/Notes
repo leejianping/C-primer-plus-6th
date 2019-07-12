@@ -17,13 +17,31 @@ The principal ways to define a string are using string constants, usning char ar
 
 ##### character string literals (string constants)
 
-A string literal, also termed a string constant, is anything enclosed in double quotation marks.
+1. A string literal, also termed a string constant, is anything enclosed in double quotation marks.
 The enclosed characters, plus a terminating \0 character automatically provided by the compiler,
 are stored in memory as a character string. 
 
-Eg:
-" I am a symbolic string constant"     (display)
-" I am a symbolic string constant\0"   (store in memory)
+   Eg:
+      " I am a symbolic string constant"     (display)
+      " I am a symbolic string constant\0"   (store in memory)
+
+2. C concatenates string literals if they are seperated by nothing or by whitespace.
+
+    Eg: 
+       char greeting[50] = "Hello, and"" how are"    " you"" today!";
+       is equivalent to this:
+       char greeting[50] = "Hello, and how are you today!";
+       
+3. If you want to use a double quotation mark within a string, precede the quotation mark with a
+   backslash, as follows:
+   
+     printf("\"Run, Spot, run!\" exclaimed Dick.\n");
+     This produces the following output:
+     "Run, Spot, run!" exclaimed Dick.
+ 
+ 
+       
+    
 
 
 
