@@ -5,13 +5,25 @@ This chapter discusses the nature of strings, how to declare and initialize stri
 how to get them into and out of programs, and how to manipulate strings.
 
 ### Representing Strings and String I/O
-(1) A character string is a char array terminated with a null character (\0)
+1. A character string is a char array terminated with a null character (\0)
 
-(2） The puts() function, like printf() , belongs to the the stdio.h family of input/output functions.
+2. The puts() function, like printf() , belongs to the the stdio.h family of input/output functions.
 It only displays strings, and, unlike printf() , it automatically appends a newline to the
 string it displays.
 
 #### Defining strings with a program
+
+The principal ways to define a string are using string constants, usning char arrays and using char pointers.
+
+##### character string literals (string constants)
+
+A string literal, also termed a string constant, is anything enclosed in double quotation marks.
+The enclosed characters, plus a terminating \0 character automatically provided by the compiler,
+are stored in memory as a character string. 
+
+Eg:
+" I am a symbolic string constant"     (display)
+" I am a symbolic string constant\0"   (store in memory)
 
 
 
