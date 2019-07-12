@@ -1,16 +1,17 @@
-# chapter 11  character strings and string functions
+
+## chapter 11  character strings and string functions
 
 This chapter discusses the nature of strings, how to declare and initialize strings, 
 how to get them into and out of programs, and how to manipulate strings.
 
-## Representing Strings and String I/O
+### Representing Strings and String I/O
 (1) A character string is a char array terminated with a null character (\0)
 
 (2） The puts() function, like printf() , belongs to the the stdio.h family of input/output functions.
 It only displays strings, and, unlike printf() , it automatically appends a newline to the
 string it displays.
 
-### Defining strings with a program
+#### Defining strings with a program
 
 
 
