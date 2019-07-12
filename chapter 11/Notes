@@ -1,4 +1,4 @@
-### chapter 11  character strings and string functions
+# chapter 11  character strings and string functions
 
 This chapter discusses the nature of strings, how to declare and initialize strings, 
 how to get them into and out of programs, and how to manipulate strings.
@@ -10,12 +10,7 @@ how to get them into and out of programs, and how to manipulate strings.
 It only displays strings, and, unlike printf() , it automatically appends a newline to the
 string it displays.
 
-# Defining strings with a program
+### Defining strings with a program
 
-(pz+2) + 1 = pz +3
-*( (pz+2) +1) = *(pz +3) = &zippo[3][0]
-(*(pz+2) + 1) = &zippo[2][1]
-*(*(pz+2) + 1) = zippo[2][1]
 
-Chapter 11 Character strings and string functions
 
