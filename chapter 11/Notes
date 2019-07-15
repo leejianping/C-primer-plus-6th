@@ -223,10 +223,238 @@ Eg:
         altered. The contents of yourtalents , however, can be changed. So if you want to alter strings
         or set aside space for string input, don’t use pointers to string literals.
         
- ##### Pointers and strings
+ #### Pointers and strings
  Most C operations for strings actually work with pointers.
+
+Eg:
+    const char * mesg = "Don't be a fool!";
+    const char * copy;
+    copy = mesg;
+    
+  1. mesg and copy are two pointers stored in different locations. ( &mesg != &copy )
+  2. mesg and copy point to the same string. (copy = mesg)
+  3. copying one address is more efficient than copying the whole string.
  
  
+### String input
+  If you want to read a string into a program, you must first set aside space to store the string and
+  then use an input function to fetch the string.
+ 
+#### Creating space
+
+ The first order of the business is setting up a place to put the string after it is read.
+     char *name;  // do not set up the size and  name is an uninitiallized pointer
+     scanf("%s", name);
+  
+ The simplest course is to include an explicit array size in the declaration:
+     char name[81];
+
+#### The unfortunate gets() function
+1. Recall that, when reading a string, scanf() and the %s specifier read just a single word.
+  gets() function reads an entire line up through the newline character, discards the newline character, 
+  stores the remaining characters, adding a null character to create a C string.
+  It's often paired with puts(), which displays a string, adding a newline
+  
+2. The problem is that gets() doesn’t check to see if the input line actually fits into the array.
+   Thus gets() only knows where the array begins, not how many elements it has.
+   If the input string is too long, you get buffer overflow
+3.So gets() unsafe behavior poses a security risk.
+
+
+#### The alternatives to gets()
+1. The traditional alternative to gets() is fgets().
+  The fgets() function meets the possible overflow problem by taking a second argument
+  that limits the number of characters to be read. This function is designed for file input, which
+  makes it a little more awkward to use. Here is how fgets() differs from gets() :
+     ■ It takes a second argument indicating the maximum number of characters to read. If this
+       argument has the value n , fgets() reads up to n-1 characters or through the newline
+       character, whichever comes first.
+     ■ If fgets() reads the newline, it stores it in the string, unlike gets() , which discards it.
+     ■ It takes a third argument indicating which file to read. To read from the keyboard, use
+        stdin (for standard input ) as the argument; this identifier is defined in stdio.h .
+        
+ 2.Because the fgets() function includes the newline as part of the string, it’s often paired with fputs() ,
+   which works like puts() , except that it doesn’t automatically append a newline.
+   It takes a second argument to indicate which file to write to. 
+   For the computer monitor we can use stdout (for standard output) as an argument
+   Eg:
+       /* fgets1.c -- using fgets() and fputs() */
+       #include <stdio.h>
+       #define STLEN 14
+       int main(void)
+       {
+        char words[STLEN];
+        puts("Enter a string, please.");
+        fgets(words, STLEN, stdin);
+        printf("Your string twice (puts(), then fputs()):\n");
+        puts(words);
+        fputs(words, stdout);
+        puts("Enter another string, please.");
+        fgets(words, STLEN, stdin);
+        printf("Your string twice (puts(), then fputs()):\n");
+        puts(words);
+        fputs(words, stdout);
+        puts("Done.");
+       
+        return 0;
+       }
+       
+     Here’s a sample run:
+     Enter a string, please.
+     apple pie
+     Your string twice (puts(), then fputs()):
+     apple pie
+     
+     apple pie
+     Enter another string, please.
+     strawberry shortcake
+     Your string twice (puts(), then fputs()):
+     strawberry sh
+     strawberry shDone.
+     
+3.  The first input, apple pie , is short enough that fgets() reads the whole input line and stores
+    apple pie\n\0 in the array.(words = apple pie\n\0)
+    The second input line, strawberry shortcake , exceeds the size limit, so fgets() reads the
+    first 13 characters and stores strawberry sh\0 in the array. (words = strawberry s\0)
+4. The fgets() function returns a pointer to char . If all goes well, it just returns the same address
+   that was passed to it as the first argument. If the function encounters end-of-file, however,
+   it returns a special pointer called the null pointer .
+5. The fact that fgets() stores the newline presents a problem and an opportunity. The problem
+  is that you might not want the newline as part of the string you store. The opportunity is the
+  presence or absence of a newline character in the stored string can be used to tell whether the
+  whole line was read. If it wasn’t, then you can decide what to do with the rest of the line.
+  
+  First, how can you get rid of a newline? One way is to search the stored string for a newline
+  and to replace it with a null character:
+  
+    while (words[i] != '\n') // assuming \n in words
+    i++;
+    words[i] = '\0';
+    
+  Second, what if there are still characters left in the input line? One reasonable choice if the
+  whole line doesn’t fit into the destination array is to discard the part that doesn’t fit:
+  
+    while (getchar() != '\n') // read but don't store
+    continue; // input including \n
+    
+ 6. The gets_s function
+    The three main differences from fgets() are these:
+      ■ gets_s() just reads from the standard input, so it doesn’t need a third argument.
+      ■ If gets_s() does read a newline; it discards it rather than storing it.
+      ■ If gets_s() reads the maximum number of characters and fails to read a newline, it
+        takes several steps. It sets the first character of the destination array to the null character.
+        It reads and discards subsequent input until a newline or end-of-file is encountered. It
+        returns the null pointer. It invokes an implementation-dependent “handler” function (or
+        else one you’ve selected), which may cause the program to exit or abort.  
+
+  
+#### The scanf function
+
+Recall that the scanf() function returns an integer value that equals the number of items
+successfully read or returns EOF if it encounters the end of file.
+
+### String output
+  Now let’s move from string input to string output. Again, we will use library functions. C has
+  three standard library functions for printing strings: puts() , fputs() , and printf() .
+
+#### The puts() function
+ puts() automatically appends a newline when it displays a string.
+ 
+#### The fputs() function
+ The fputs() function is the file-oriented version of puts() . The main differences are these:
+ 
+    ■ The fputs() function takes a second argument indicating the file to which to write. You
+      can use stdout (for standard output ), which is defined in stdio.h , as an argument to
+      output to your display.
+    ■ Unlike puts() , fputs() does not automatically append a newline to the output.
+      
+Note that gets() discards a newline on input, but puts() adds a newline on output. 
+On the other hand, fgets() stores the newline on input, and fputs() doesn’t add a newline on output.
+
+Recall that gets() returns the null pointer if it encounters end-of-file. The null pointer evaluates
+as zero, or false, so that terminates the loop.
+
+#### The printf() function
+
+
+### The do-it-yourself option
+
+You can prepare your own versions, building on getchar() and putchar() .
+
+### String function 
+The C library supplies several string-handling functions; ANSI C uses the string.h header file
+to provide the prototypes.
+
+
+#### The strlen()  function
+
+The strlen() function, as you already know, finds the length of a string.
+
+#### The strcat() function
+
+The strcat() (for string concatenation ) function takes two strings for arguments. A copy of the
+second string is tacked onto the end of the first, and this combined version becomes the new first string.
+
+The second string is not altered. The strcat() function is type char * (that is, a pointer-to- char ). 
+It returns the value of its first argument—the address of the first character of
+the string to which the second string is appended.
+
+The strncat() Function
+The strcat() function does not check to see whether the second string will fit in the first array.
+Alternatively, you can use strncat() , which takes a second argument indicating the maximum number of characters to add.
+
+#### The strcmp() function
+
+strcmp() (for string comparison ). This function does for strings what relational operators do for numbers.
+In particular, it returns 0 if its two string arguments are the same and nonzero otherwise.
+
+strcmp() compares strings, not arrays.
+
+The strncmp() functioncompares the strings until they differ or until it has compared a number of characters specified
+by a third argument.
+
+#### The strcpy() function and strncpy () function
+
+strcpy() to copy the string from the temporary array to a permanent destination. The strcpy() function 
+is the string equivalent of the assignment operator.
+
+
+The strcpy() function shares a problem with strcat() —neither checks to see whether the
+source string actually fits in the target string. The safer way to copy strings is to use strncpy() .
+It takes a third argument, which is the maximum number of characters to copy. Listing 11.27 is
+a rewrite of Listing 11.25 , using strncpy() instead of strcpy() .
+
+
+#### The sprintf() function
+
+The sprintf() function is declared in stdio.h instead of string.h . It works like printf() ,
+but it writes to a string instead of writing to a display.
+
+#### Other string function
+
+The ANSI C library has more than 20 string-handling functions.
+
+#### Command-line arguments in integrated enviroments
+
+
+#### Command-line arguments with the macintosh
+
+
+### A string example: sorting strings
+
+
+### Command-line arguments
+
+
+### String-to-number conversions
+
+### Key concepts
+
+### Summary
+
+  
+    
+    
  
         
         
