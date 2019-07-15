@@ -166,15 +166,73 @@ In short, don’t use a pointer to a string literal if you plan to alter the str
  
 ##### Arrays of character strings
 
+It is often convenient to have an array of character strings. Then you can use a subscript to
+access several different strings.
 
- 
-     
-     
+Eg:
+(1). an array of pointers to strings
+
+     const char *mytalents[LIM] = {
+           "Adding numbers swiftly",
+            "Multiplying accurately", "Stashing data",
+            "Following instructions to the letter",
+            "Understanding the C language"
+          };
+          
+  (2). an array of char arrays
   
-       
-       
-       
+     char yourtalents[LIM][SLEN] = {
+           "Walking in a straight line",
+           "Sleeping", "Watching television",
+            "Mailing letters", "Reading email"
+          };
+  
+     
+  1. In some ways, mytalents and yourtalents are much alike. Each represents five strings. When
+    used with one index, as in mytalents[0] and yourtalents[0] , the result is a single string.
+    And, just as mytalents[1][2] is 'l' ,  yourtalents[1][2] is 'e'. Both are initialized in the same fashion.
     
+  
+   2. But there are differences, too. The mytalents array is an array of five pointers, taking up 40
+     bytes on our system. But yourtalents is an array of five arrays, each of 40 char values, occupying
+     200 bytes on our system. So mytalents is a different type from yourtalents , even
+     though mytalents[0] and yourtalents[0] both are strings. The pointers in mytalents point
+     to the locations of the string literals used for initialization, which are stored in static memory.
+     The arrays in yourtalents , however, contain copies of the string literals, so each string is
+     stored twice. Furthermore, the allocation of memory in the arrays is inefficient, for each
+     element of yourtalents has to be the same size, and that size has to be at least large enough to hold the longest string.
+     
+   3. One way of visualizing this difference is to think of yourtalents as a rectangular two-dimensional
+      array, with each row being of the same length, 40 bytes, in this case. Next, think of
+      mytalents as a ragged array, one in which the row length varies.   
+      
+       
+        char fruit1[3][7] = {"Apple", "Pear", "Orange"}; // retangular array
+        A   p   p   l   e   \0   \0
+        P   e   a   r  \0   \0   \0
+        O   r   a   n   g    e   \0
+        
+       const char *fruit2[3] = {"Apple", "Pear", "Orange"};  // ragged array
+        A   p   p   l   e   \0  
+        P   e   a   r  \0   
+        O   r   a   n   g    e   \0
+      
+     4. The upshot is that, if you want to use an array to represent a bunch of strings to be displayed,
+        an array of pointers is more efficient than an array of character arrays. There is, however, a
+        catch. Because the pointers in mytalents point to string literals, these strings shouldn’t be
+        altered. The contents of yourtalents , however, can be changed. So if you want to alter strings
+        or set aside space for string input, don’t use pointers to string literals.
+        
+ ##### Pointers and strings
+ Most C operations for strings actually work with pointers.
+ 
+ 
+ 
+        
+        
+        
+        
+        
  
        
     
