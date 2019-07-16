@@ -435,6 +435,28 @@ but it writes to a string instead of writing to a display.
 The ANSI C library has more than 20 string-handling functions.
 
 #### Command-line arguments in integrated enviroments
+1. Executable file called repeat
+   C> repeat Resistance is futile
+   int main(int argc, char *argv[])
+
+2. C compilers allow main() to have no arguments or else to have two arguments.  
+   With two arguments, the first argument is the number of strings in the command line.
+   By tradition, this int argument is called argc for argument count. The system uses
+   spaces to tell when one string ends and the next begins. Therefore, the repeat example has
+   four strings, including the command name, and the fuss example has three. The program
+   stores the command line strings in memory and stores the address of each string in an array
+   of pointers. The address of this array is stored in the second argument. By convention, this
+   pointer to pointers is called argv , for argument values . When possible (some operating systems
+   don’t allow this), argv[0] is assigned the name of the program itself. Then argv[1] is assigned
+   the first following string, and so on. For our example, we have the following relationships:
+
+   argv[0] points to repeat (for most systems)
+   argv[1] points to Resistance
+   argv[2] points to is
+   argv[3] points to futile
+
+3. int main(int argc, char *argv[])  is equivelent to 
+   int main(int argc, char **argv)
 
 
 #### Command-line arguments with the macintosh
@@ -448,9 +470,63 @@ The ANSI C library has more than 20 string-handling functions.
 
 ### String-to-number conversions
 
+
+If the number is an integer, you can use the atoi() function (for alphanumeric to integer ).
+It takes a string as an argument and returns the corresponding integer value.
+
 ### Key concepts
 
+Many programs deal with text data. A program may ask you to enter your name, a list of
+corporations, an address, the botanical name for a type of fern, the cast of a musical, or...well,
+because we interact with the world using words, there’s really no end to examples using text.
+And strings are the means a C program uses to handle strings.
+
+A C string —whether it be identified by a character array, a pointer, or a string literal—is stored
+as a series of bytes containing character codes, and the sequence is terminated by the null character.
+C recognizes the usefulness of strings by providing a library of functions for manipulating
+them, searching them, and analyzing them. In particular, keep in mind that you should
+use strcmp() instead of relational operators when comparing strings, and you should use
+strcpy() or strncpy() instead of the assignment operator to assign a string to a character
+array.
+
 ### Summary
+
+A C string is a series of char s terminated by the null character, '\0' . A string can be stored in a
+character array. A string can also be represented with a string constant , in which the characters,
+aside from the null character, are enclosed in double quotation marks. The compiler supplies
+the null character. Therefore, "joy" is stored as the four characters j , o , y , and \0 . The length
+of a string, as measured by strlen() , doesn’t count the null character.
+
+String constants, also known as string literals , can be used to initialize character arrays. The
+array size should be at least one greater than the string length to accommodate the terminating
+null character. String constants can also be used to initialize pointers of type pointer-to- char .
+
+Functions use pointers to the first character of a string to identify on which string to act.
+Typically, the corresponding actual argument is an array name, a pointer variable, or a quoted
+string. In each case, the address of the first character is passed. In general, it is not necessary
+to pass the length of the string, because the function can use the terminating null character to
+locate the end of a string.
+
+The f gets() function fetches a line of input, and the puts() and fputs() functions display a
+line of output. They are part of the stdio.h family of functions, as once was the now disgraced
+and abandoned function gets() .
+
+The C library includes several string-handling functions. Under ANSI C, these functions are
+declared in the string.h file. The library also has several character-processing functions; they are
+declared in the ctype.h file.
+
+You can give a program access to command-line arguments by providing the proper two formal
+variables to the main() function. The first argument, traditionally called argc , is an int and is
+assigned the count of command-line words. The second argument, traditionally called argv , is
+a pointer to an array of pointers to char . Each pointer-to- char points to one of the commandline
+argument strings, with argv[0] pointing to the command name, argv[1] pointing to the
+first command-line argument, and so on.
+
+The atoi() , atol() , and atof() functions convert string representations of numbers to type
+int , long , and double forms, respectively. The strtol() , strtoul() , and strtod() functions
+convert string representations of numbers to type long , unsigned long , and double
+forms, respectively.
+
 
   
     
