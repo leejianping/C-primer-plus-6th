@@ -1,0 +1,228 @@
+## Chapter 15 Bit Fiddling
+
+With C, you can manipulate the individual bits in a variable.
+
+### Binary numbers, bits and bytes
+
+1 x 2^3 + 1 x 2^2 + 0 x 2^1 + 1 x 2^0
+In decimal numbers, it becomes this:
+1 x 8 + 1 x 4 + 0 x 2 + 1 x 1 = 13
+
+#### Bianry integers
+
+bit number    7   6   5   4   3   2   1   0
+              ______________________________
+             
+              0   1   0   0   1   0   0   1
+             ______________________________
+bit value    128  64  32  16  8   4   2   1
+
+This example shows bits 6, 3, and 0 set to 1. The value of this byte is 64 + 8 + 1 or 73.
+
+
+#### Signed integers
+
+The simplest method for reversing the sign of a two’s-complement binary number is to invert
+each bit (convert 0s to 1s and 1s to 0s) and then add 1. Because 1 is 00000001, –1 is 11111110
++ 1, or 11111111, just as you saw earlier.
+
+#### Binary floating point
+
+Binary Fractions
+The ordinary fraction 0.527 represents
+
+5/10 + 2/100 + 7/1000
+
+with the denominators representing increasing powers of 10. In a binary fraction, you use
+powers of two for denominators, so the binary fraction .101 represents
+
+1/2 + 0/4 + 1/8
+
+which in decimal notation is
+
+0.50 + 0.00 + 0.125
+or 0.625.
+
+### Other number bases
+
+#### Octal
+
+#### Hexadecimal
+
+
+### C's bitwise operators
+
+C offers bitwise logical operators and shift operators.
+
+
+#### Bitwise logical operators
+The four bitwise logical operators work on integer-type data, including char . They are called
+bitwise because they operate on each bit independently of the bit to the left or right. Don’t
+confuse them with the regular logical operators ( && , || , and ! ), which operate on values as a whole.
+
+1. One’s Complement, or Bitwise Negation: ~
+
+    ~(10011010) // expression
+     (01100101) // resulting value 
+    
+2. Bitwise AND: &
+
+  (10010011) & (00111101) // expression
+  (00010001) // resulting value
+  
+3.Bitwise OR: |
+
+  (10010011) | (00111101) // expression
+  (10111111) // resulting value
+  
+4. Bitwise EXCLUSIVE OR: ^
+
+   (10010011) ^ (00111101) // expression
+   (10101110) // resulting value
+
+#### Usage: masks
+
+ A mask is a bit pattern with some bits set to on (1) and some bits to off (0).
+ Eg: 
+ Suppose you define the symbolic constant MASK as 2 (that is, binary 00000010 ), with only bit number 1 being nonzero.
+ Then the statement
+ 
+  flags = flags & MASK;
+ 
+ would cause all the bits of flags (except bit 1) to be set to 0, Bit number 1 will be left unchanged.
+            
+    0000 00 | 1 | 0 
+            
+    1001 01   1   0
+    
+    ----------1----
+
+#### Usage: turning bits on 
+
+ For example, consider the MASK , which has bit 1 set to 1. The statement
+ flags = flags | MASK;
+ sets bit number 1 in flags to 1 and leaves all the other bits unchanged
+ Eg:
+  suppose flags is 00001111 and MASK is 10110110 . The expression
+  
+  flags | MASK
+  (00001111) | (10110110) // expression
+   (10111111) // resulting value
+
+#### Usage: Turning Bits Off (Clearing Bits)
+Suppose you want to turn off bit 1 in the variable flags . Once again, MASK has only the 1 bit turned on. You can do this:
+flags = flags & ~MASK;
+
+
+#### Usage: toggling bits
+Toggling a bit means turning it off if it is on, and turning it on if it is off.
+The idea is that if b is a bit setting (1 or 0), then 1 ^ b is 0 if b is 1 and is 1 if b is 0 .
+
+flags = flags ^ MASK;
+flags ^= MASK;
+
+#### Usage:checking the value of a bit
+
+if ((flags & MASK) == MASK)
+  puts("Wow!");
+
+#### Bitwise shift operators
+The bitwise shift operators shift bits to the left or right.
+
+1. Left Shift: <<
+   (10001010) << 2 // expression
+   (00101000) // resulting value
+   
+2. Right Shift: >>
+
+   (10001010) >> 2 // expression, signed value
+   (00100010) // resulting value, some systems
+   (10001010) >> 2 // expression, signed value
+   (11100010) // resulting value, other systems
+   
+   For an unsigned value, you have the following:
+   
+   (10001010) >> 2 // expression, unsigned value
+   (00100010) // resulting value, all system
+
+3. Usage: Bitwise Shift Operators
+
+The bitwise shift operators can provide swift, efficient (depending on the hardware) multiplication and division by powers of 2:
+ 
+  number << n    Multiplies number by 2 to the n th power
+  number >> n     Divides number by 2 to the n th power if number is not negative
+
+
+
+### Bit fields
+The second method of manipulating bits is to use a bit field , which is just a set of neighboring
+bits within a signed int or an unsigned int .
+A bit field is set up with a structure declaration that labels each field and determines
+its width. For example, the following declaration sets up four 1-bit fields:
+  struct {
+           unsigned int autfd : 1;
+           unsigned int bldfc : 1;
+           unsigned int undln : 1;
+           unsigned int itals : 1;
+          } prnt;
+          
+This definition causes prnt to contain four 1-bit fields. Now you can use the usual structure
+membership operator to assign values to individual fields:
+
+   prnt.itals = 0;
+   prnt.undln = 1;
+   
+   Eg:
+      struct {
+               unsigned int code1 : 2;
+               unsigned int code2 : 2;
+               unsigned int code3 : 8;
+              } prcode;
+This code creates two 2-bit fields and one 8-bit field. You can now make assignments such as the following:
+   prcode.code1 = 0;
+   prcode.code2 = 3;
+   prcode.code3 = 102;
+
+   
+### Key concepts
+One of the features that sets C apart from most high-level languages is its ability to access individual
+bits in an integer. This often is the key to interfacing with hardware devices and with operating systems.
+
+C has two main facilities for accessing bits. One is the family of bitwise operators, and the other
+is the ability to create bit fields in a structure.
+
+C11 adds the capability to inspect the memory alignment requirement and to request stricter requirements.
+Typically, but not always, programs using these features are tied to particular hardware platforms
+or operating systems and aren’t intended to be portable.
+
+### Summary
+Computing hardware is closely tied to the binary number system because the 1s and 0s of
+binary numbers can be used to represent the on and off states of bits in computer memory and
+registers. Although C does not allow you to write integers in binary form, it does recognize the
+related octal and hexadecimal notations. Just as each binary digit represents 1 bit, each octal
+digit represents 3 bits, and each hexadecimal digit represents 4 bits. This relationship makes it
+relatively simple to convert binary numbers to octal or hexadecimal form.
+
+
+C features several bitwise operators, so called because they operate independently on each bit
+within a value. The bitwise negation operator ( ~ ) inverts each bit in its operand, converting 1s
+to 0s, and vice versa. The bitwise AND operator ( & ) forms a value from two operands. Each bit
+in the value is set to 1 if both corresponding bits in the operands are 1. Otherwise, the bit is set
+to 0. The bitwise OR operator ( | ) also forms a value from two operands. Each bit in the value is
+set to 1 if either or both corresponding bits in the operands are 1; otherwise, the bit is set to 0.
+The bitwise EXCLUSIVE OR operator ( ^ ) acts similarly, except that the resulting bit is set to 1
+only if one or the other, but not both, of the corresponding bits in the operands is 1.
+
+
+C also has left-shift (<<) and right-shift ( >> ) operators. Each produces a value formed by shifting
+the bits in a pattern the indicated number of bits to the left or right. For the left-shift
+operator, the vacated bits are set to 0. For the right-shift operator, the vacated bits are set to 0
+if the value is unsigned . The behavior of the right-shift operator is implementation dependent
+for signed values.
+
+You can use bit fields in a structure to address individual bits or groups of bits in a value. The
+details are implementation independent.
+
+You can use Alignas to impose alignment requirements on data storage.
+
+These bit tools help C programs deal with hardware matters, so they most often appear in  implementation-dependent contexts.
