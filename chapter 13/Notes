@@ -1,0 +1,307 @@
+
+## Chapter 12  File input/ouput
+
+In this chapter, you will learn how  to process files using these functions  C's standard I/O family of functions,
+and how to use functions that can access files both sequentially and randomly.
+
+### Communicating with files
+
+#### What is a file
+
+A file is a named section of storage, usually on a disk, or, more recently, on a solid-state device.
+C views a file as a continuous sequence of bytes, each of which can be read individually.
+C provides two ways to view files: the text view and the binary view.
+
+#### The text mode and the binary mode
+
+First, let’s distinguish between text and binary content, text and binary file formats, and text
+and binary modes for files.
+
+All file content is in binary form (zeros and ones). But if a file primarily uses the binary codes
+for characters (for instance, ASCII or Unicode) to represent text, much as a C string does, then
+it is a text file; it has text content. If, instead, the binary values in the file represent machinelanguage
+code or numeric data (using the same internal representation as, say, used for long or
+double values) or image or music encoding, the content is binary.
+
+Unix uses the same file format for both kinds of content. And this is true for Linux, too.
+
+To bring some regularity to the handling of text files, C provides two ways of accessing a
+file: binary mode and text mode. In the binary mode, each and every byte of the file is accessible
+to a program. In the text mode, however, what the program sees can differ from what
+is in the file.
+
+  an MS-DOS text file:
+
+             Rebecca clutched the\r\n
+             jewel-encrusted scarab\r\n
+             to her heaving bosun.\r\n
+             ^Z
+         
+  The way it looks to a C program when opened in  the binary mode:        
+             
+             Rebecca clutched the\r\n
+             jewel-encrusted scarab\r\n
+             to her heaving bosun.\r\n
+             ^Z
+             
+  The way it looks to a C program when opened in the text mode:  
+  
+             Rebecca clutched the\n
+             jewel-encrusted scarab\n
+             to her heaving bosun.\n
+
+ 
+#### levels of I/O
+Low-level I/O uses the fundamental I/O services provided by the operating system. 
+Standard high-level I/O uses a standard package of C library functions and stdio.h header file definitions.
+
+The C standard supports only the standard I/O package because there is no way to guarantee that all operating systems can be
+represented by the same low-level I/O model.
+
+#### Standard files
+
+C programs automatically open three files on your behalf. They are termed the standard input ,
+the standard output , and the standard error output . The standard input, by default, is the normal
+input device for your system, usually your keyboard. Both the standard output and the standard
+error output, by default, are the normal output device for your system, usually your
+display screen.
+
+### Standard I/O
+
+The standard I/O package has two advantages, besides portability, over low-level I/O. First, it
+has many specialized functions that simplify handling different I/O problems. For example,
+printf() converts various forms of data to string output suitable for terminals. Second, input
+and output are buffered .
+
+That is, information is transferred in large chunks (typically 512 bytes at a time or more) instead of a byte at a time. When a program reads a file, for example,
+a chunk of data is copied to a buffer—an intermediate storage area. This buffering greatly increases the data transfer rate.
+
+#### Checking for command-line arguments
+
+/* count.c -- using standard I/O */
+#include <stdio.h>
+#include <stdlib.h> // exit() prototype
+int main(int argc, char *argv[])
+{
+int ch; // place to store each character as read
+FILE *fp; // "file pointer"
+unsigned long count = 0;
+if (argc != 2)
+{
+printf("Usage: %s filename\n", argv[0]);
+exit(EXIT_FAILURE);
+}
+if ((fp = fopen(argv[1], "r")) == NULL)
+{
+printf("Can't open %s\n", argv[1]);
+exit(EXIT_FAILURE);
+}
+while ((ch = getc(fp)) != EOF)
+{
+putc(ch,stdout); // same as putchar(ch);
+count++;
+}
+fclose(fp);
+printf("File %s has %lu characters\n", argv[1], count);
+return 0;
+}
+
+
+#### The fopen() function
+
+The fopen() function is declared in stdio.h . Its first argument is the name of the file to be opened; more exactly, it is the address of a string
+containing that name. The second argument is a string identifying the mode in which the file is to be opened.
+
+  "r"  Open a text file for reading.
+  "w"  Open a text file for writing, truncating an existing file to zero length, or creatingthe file if it does not exist.
+  "a"  Open a text file for writing, appending to the end of an existing file, or creating the file if it does not exist.
+
+After your program successfully opens a file, fopen() returns a file pointer , which the other I/O functions can then use to specify the file.  
+
+#### The getc() and putc（）functions
+The two functions getc() and putc() work very much like getchar() and putchar() . The difference is that you must tell these newcomers which file to use.
+
+ch = getchar(); //get a character from the standard input
+ch = getc(fp);  //get a character from the file identified by fp
+
+putc(ch, fpout); //put the character ch into the file identified by the FILE pointer fpout
+
+putc(ch, stdout) is the same as putchar(ch)
+
+#### End-of-file
+A program reading data from a file needs to stop when it reaches the end of the file.   The getc() function returns the special value EOF if it
+tries to read a character and discovers it has reached the end of the file. So a C program discovers it has reached the end of a file only after it tries to read past the end of the file. (This is
+unlike the behavior of some languages, which use a special function to test for end-of-file before attempting a read.)
+
+#### The fclose() function
+The fclose(fp) function closes the file identified by fp , flushing buffers as needed. For a
+program less casual than this one, you would check to see whether the file had been closed
+successfully. The function fclose() returns a value of 0 if successful, and EOF if not:
+
+if (fclose(fp) != 0)
+printf("Error in closing file %s\n", argv[1]);
+
+#### pointers to the standard files
+
+The stdio.h file associates three file pointers with the three standard files automatically
+opened by C programs:
+
+Standard File          File Pointer             Normally
+---------------------------------------------------------------
+Standard input          stdin                  Your keyboard
+Standard output         stdout                 Your screen
+Standard error          stderr                 Your screen 
+
+
+### A simple-Minded file-condensing program
+
+
+
+### File I/O: fprintf(), fscanf(), fgets(), fputs()
+
+For each of the I/O functions in the preceding chapters, there is a similar file I/O function. The
+main distinction is that you need to use a FILE pointer to tell the new functions with which file to work.
+
+#### The fprintf() and fputs() functions.
+
+The file I/O functions fprintf() and fscanf() work just like printf() and scanf() , except that they require an additional first argument to identify the proper file
+
+#### The fgets() and fputs() functions
+
+fgets(buf, STLEN, fp);
+Here, buf is the name of a char array, STLEN is the maximum size of the string, and fp is the pointer-to- FILE.
+
+fputs(buf, fp);
+Here, buf is the string address, and fp identifies the target file.
+
+
+### Adventures in random access: fseek() and ftell()
+
+The fseek() function enables you to treat a file like an array and move directly to any particular
+byte in a file opened by fopen().
+
+#### How fseek() and ftell() work
+
+fseek(fp, 0L, SEEK_SET); // go to the beginning of the file
+fseek(fp, 10L, SEEK_SET); // go 10 bytes into the file
+fseek(fp, 2L, SEEK_CUR); // advance 2 bytes from the current position
+fseek(fp, 0L, SEEK_END); // go to the end of the file
+fseek(fp, -10L, SEEK_END); // back up 10 bytes from the end of the file
+
+Now we can examine the basic elements of Listing 13.4 . First, the statement 
+
+fseek(fp, 0L, SEEK_END);
+sets the position to an offset of 0 bytes from the file end. That is, it sets the position to the end
+of the file. Next, the statement
+
+last = ftell(fp);
+assigns to last the number of bytes from the beginning to the end of the file.
+
+#### Binary versus text mode
+
+#### Portablity
+
+#### The fgetpos() and fsetpos functions
+
+
+
+### Behind the scenes with standard I/O
+Normally, the first step in using standard I/O is to use fopen() to open a file. (Recall, however,
+that the stdin , stdout , and stderr files are opened automatically.) The fopen() function
+not only opens a file but sets up a buffer (two buffers for read-write modes), and it sets up a
+data structure containing data about the file and about the buffer. Also, fopen() returns a
+pointer to this structure so that other functions know where to find it. Assume that this value
+is assigned to a pointer variable named fp . The fopen() function is said to “open a stream.” If
+the file is opened in the text mode, you get a text stream, and if the file is opened in the binary
+mode, you get a binary stream.
+The data structure typically includes a file position indicator to specify the current position in
+the stream. It also has indicators for errors and end-of-file, a pointer to the beginning of the
+buffer, a file identifier, and a count for the number of bytes actually copied into the buffer.
+Let’s concentrate on file input. Usually, the next step is to call on one of the input functions
+declared in stdio.h , such as fscanf() , getc() , or fgets() . Calling any one of these functions
+causes a chunk of data to be copied from the file to the buffer. The buffer size is implementation
+dependent, but it typically is 512 bytes or some multiple thereof, such as 4,096 or
+16,384. (As hard drives and computer memories get larger, the choice of buffer size tends to get
+larger, too.) In addition to filling the buffer, the initial function call sets values in the structure
+pointed to by fp . In particular, the current position in the stream and the number of bytes
+copied into the buffer are set. Usually the current position starts at byte 0.
+After the data structure and buffer are initialized, the input function reads the requested data
+from the buffer. As it does so, the file position indicator is set to point to the character following
+the last character read. Because all the input functions from the stdio.h family use the
+same buffer, a call to any one function resumes where the previous call to any of the functions
+stopped.
+When an input function finds that it has read all the characters in the buffer, it requests that
+the next buffer-sized chunk of data be copied from the file into the buffer. In this manner, the
+input functions can read all the file contents up to the end of the file. After a function reads
+the last character of the final buffer’s worth of data, it sets the end-of-file indicator to true. The
+next call to an input function then returns EOF .
+In a similar manner, output functions write to a buffer. When the buffer is filled, the data is
+copied to the file.
+
+
+
+### Other standard I/O functions
+ 
+ 
+### Key concepts
+
+A C program views input as a stream of bytes; the source of this stream could be a file, an input
+device (such as a keyboard), or even the output of another program. Similarly, a C program
+views output as a stream of bytes; the destination could be a file, a video display, and so on.
+
+How C interprets an input stream or output stream of bytes depends on which input/output
+functions you use. A program can read and store the bytes unaltered, or it can interpret the
+bytes as characters, which, in turn, can be interpreted as ordinary text or as the text representation
+of numbers. Similarly, on output, the functions you use determine whether binary values
+are transferred unaltered or converted to text or textual representations of numbers. If you have
+numeric data that you want to save and recover with no loss of precision, use the binary mode
+and the fread() and fwrite() functions. If you’re saving text information and want to create
+files that can be viewed with ordinary text editors, use the text mode and functions such as
+getc() and fprintf().
+
+To access a file, you need to create a file pointer (type FILE * ) and associate the pointer with
+a particular filename. Subsequent code then uses the pointer, not the filename, when dealing
+with the file. 
+
+It’s important to understand how C handles the end-of-file concept. Typically, a file-reading
+program uses a loop to read input until reaching the end of file. The C input functions don’t
+detect end-of-file until they attempt to read past the end. This means that testing for end-offile
+should occur immediately after an attempted read. You can use the two-file-input models
+labeled “good design” in the “End-of-File” section of this chapter as a guide.
+
+### Summary
+
+Writing to and reading from files is essential for most C programs. Most C implementations
+offer both low-level I/O services and standard high-level I/O services for these purposes. Because
+the ANSI C library includes the standard I/O services but not the low-level services, the standard
+package is more portable.
+
+The standard I/O package automatically creates input and output buffers to speed up data transfer.
+The fopen() function opens a file for standard I/O and creates a data structure designed to
+hold information about the file and the buffer. The fopen() function returns a pointer to that
+data structure, and this pointer is used by other functions to identify the file to be processed.
+The feof() and ferror() functions report the reason an I/O operation failed.
+
+C views input as a stream of bytes. If you use fread() , C views the input as binary values to be
+placed into whichever storage location you indicate. If you use fscanf() , getc() , fgets() , or
+any of the related functions, C views each byte as being a character code. The fscanf() and
+scanf() functions then attempt to translate the character code into other types, as indicated
+by the format specifiers. For example, the %f specifier would translate an input of 23 into a
+floating-point value, the %d specifier would translate the same input into an integer value, and
+the %s specifier would save the character input as a string. The getc() and fgets() family of
+functions leave the input as character code and store it either in char variables as individual
+characters or in char arrays as strings. Similarly, fwrite() places binary data directly into
+the output stream, whereas the other output functions convert noncharacter data to character
+representations before placing it in the output stream.
+
+ANSI C provides two file-opening modes: binary and text. When a file is opened in binary
+mode, it can be read byte-for-byte. When a file is opened in text mode, its contents may be
+mapped from the system representation of text to the C representation. For Unix and Linux
+systems, the two modes are identical.
+
+The input functions getc() , fgets() , fscanf() , and fread() normally read a file sequentially,
+starting at the beginning of the file. However, the fseek() and ftell() functions let a
+program move to an arbitrary position in a file, enabling random access. Both fgetpos() and
+fsetpos() extend similar capabilities to larger files. Random access works better in the binary
+mode than in the text mode.
+
