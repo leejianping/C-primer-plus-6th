@@ -165,6 +165,7 @@ called global variables .
 
 
 #### Linkage
+
 Next, let’s look at linkage. A C variable has one of the following linkages: external linkage,
 internal linkage, or no linkage . Variables with block scope, function scope, or function prototype
 scope have no linkage. That means they are private to the block, function, or prototype in
@@ -273,15 +274,183 @@ ________________________________________________________________________________
 
 #### Automatic variables
 
+A variable belonging to the automatic storage class has automatic storage duration, block scope,
+and no linkage. By default, any variable declared in a block or function header belongs to the
+automatic storage class. You can, however, make your intentions perfectly clear by explicitly
+using the keyword auto , as shown here:
 
+  int main(void)
+   {
+      auto int plox;
+      ....
+    }
+    
+You might do this, for example, to document that you are intentionally overriding an external
+variable definition or that it is important not to change the variable to another storage class.
+The keyword auto is termed a storage-class specifier . C++ has repurposed the auto keyword for
+a quite different use, so simply not using auto as a storage-class specifier is better for C/C++
+compatibility.
+
+
+int loop(int n)
+{
+    int m;             // m in scope
+    scanf("%d", &m);
+    {
+         int i;          // both m and i in scope
+         for (i = m; i < n; i++)
+          puts("i is local to a sub-block\n");
+     }
+     return m;           // m in scope, i gone
+}
+
+A variable in an inner block that has the same name as one in the outer block will hide the outer definition.
+However, when execution exits the inner block, the outer variable comes back into scope.
+
+// hiding.c -- variables in blocks
+#include <stdio.h>
+int main()
+{
+    int x = 30;                                       // original x
+    
+    printf("x in outer block: %d at %p\n", x, &x);
+    {
+       int x = 77;                                     // new x, hides first x
+       printf("x in inner block: %d at %p\n", x, &x);
+     }
+     printf("x in outer block: %d at %p\n", x, &x);
+     while (x++ < 33)                                  // original x
+     {
+         int x = 100;                                  // new x, hides first x
+         x++;
+         printf("x in while loop: %d at %p\n", x, &x);
+      }
+     printf("x in outer block: %d at %p\n", x, &x);    // x =34, terminate the while loop
+     
+     return 0;
+}
+
+Automatic variables are not initialized unless you do so explicitly.
+
+int main(void)
+{ 
+   int repid;
+   int tents = 5;
+   
+The tents variable is initialized to 5 , but the repid variable ends up with whatever value
+happened to previously occupy the space assigned to repid .
 
 #### Register variables
 
+Variables are normally stored in computer memory. With luck, register variables are stored
+in the CPU registers or, more generally, in the fastest memory available, where they can be
+accessed and manipulated more rapidly than regular variables. Because a register variable may
+be in a register rather than in memory, you can’t take the address of a register variable. In most
+other respects, register variables are the same as automatic variables. That is, they have block
+scope, no linkage, and automatic storage duration. A variable is declared by using the storage
+class specifier register :
+
+int main(void)
+{
+register int quick;
+
+We say “with luck” because declaring a variable as a register class is more a request than
+a direct order. The compiler has to weigh your demands against the number of registers or
+amount of fast memory available, or it can simply ignore the request, so you might not get
+your wish. In that case, the variable becomes an ordinary automatic variable; however, you still
+can’t use the address operator with it.
+
+You can request that formal parameters be register variables. Just use the keyword in the function
+heading:
+
+void macho(register int n)
+
+The types that can be declared register may be restricted. For example, the registers in a
+processor might not be large enough to hold type double .
+
+
+
 #### Static variables with block scope
+
+The name static variable sounds like a contradiction, like a variable that can’t vary. Actually,
+static means that the variable stays put in memory, not necessarily in value. Variables with
+file scope automatically (and necessarily) have static storage duration. As mentioned earlier,
+you also can create local variables having block scope but static duration. These variables have
+the same scope as automatic variables, but they don’t vanish when the containing function
+ends its job. That is, such variables have block scope, no linkage, but static storage duration.
+The computer remembers their values from one function call to the next—such variables are
+created by declaring them in a block (which provides the block scope and lack of linkage) with
+the storage-class specifier static (which provides the static storage duration). The example in
+Listing 12.3 illustrates this technique.
+
+/* loc_stat.c -- using a local static variable */
+#include <stdio.h>
+void trystat(void);
+int main(void)
+{
+   int count;
+   
+   for (count = 1; count <= 3; count++)
+    {
+      printf("Here comes iteration %d:\n", count);
+      trystat();
+    }
+    
+    return 0;
+}
+
+void trystat(void)
+{
+     int fade = 1;
+     static int stay = 1;
+     
+     printf("fade = %d and stay = %d\n", fade++, stay++);
+}
+
+
+Here is the output:
+
+Here comes iteration 1:
+fade = 1 and stay = 1
+Here comes iteration 2:
+fade = 1 and stay = 2
+Here comes iteration 3:
+fade = 1 and stay = 3
+
+The static variable stay remembers that its value was increased by 1, but the fade variable
+starts anew each time. This points out a difference in initialization: fade is initialized each time
+trystat() is called, but stay is initialized just once, when trystat() is compiled. Static variables
+are initialized to zero if you don’t explicitly initialize them to some other value.
+The two declarations look similar:
+
+int fade = 1;
+static int stay = 1;
+
+However, the first statement is really part of the trystat() function and is executed each
+time the function is called. It is a runtime action. The second statement isn’t actually part of
+the trystat() function. If you use a debugger to execute the program step-by-step, you’ll
+see that the program seems to skip that step. That’s because static variables and external variables
+are already in place after a program is loaded into memory. Placing the statement in the
+trystat() function tells the compiler that only the trystat() function is allowed to see the
+variable; it’s not a statement that’s executed during runtime.
+
+You can’t use static for function parameters:
+
+int wontwork(static int flu); // not allowed
+
+Another term for a static variable with block scope is a “local static variable.” Also, if you read
+some of the older C literature, you’ll find this storage class referred to as the internal static
+storage class . However, the word internal was used to indicate internal to a function, not internal
+linkage.
+
 
 #### Static variables with external linkage
 
+
+
 #### Static variables with internal linkage
+
+
 
 #### Multiple files
 
