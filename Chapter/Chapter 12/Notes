@@ -1,1 +1,320 @@
 
+## Chapter 12 Storage classes, linkage, and memory management
+
+One of C’s strengths is that it enables you to control a program’s fine points. C’s memory
+management system exemplifies that control by letting you determine which functions know
+which variables and for how long a variable persists in a program. Using memory storage is one
+more element of program design.
+
+### Storage classes
+C provides several different models, or storage classes , for storing data in memory.
+
+Every programming example in this book stores data in memory. There is a hardware aspect
+to this—each stored value occupies physical memory. C literature uses the term object for such
+a chunk of memory. An object can hold one or more values. An object might not yet actually
+have a stored value, but it will be of the right size to hold an appropriate value. (The phrase
+object-oriented programming uses the word object in a more developed sense to indicate class 
+objects, whose definitions encompass both data and permissible operations on the data; C is
+not an object-oriented programming language.)
+
+There also is a software aspect—the program needs way to access the object. This can be
+accomplished, for instance, by declaring a variable:
+
+int entity = 3;
+
+This declaration creates an identifier called entity . An identifier is a name, in this case one
+that can be used to designate the contents of a particular object.In this case, the identifier
+entity is how the software (the C program) designates the object that’s stored in hardware
+memory. This declaration also provides a value to be stored in the object.
+
+A variable name isn’t the only way to designate an object. For instance, consider the following
+declarations:
+int * pt = &entity;
+int ranks[10];
+
+In the first case, pt is an identifier. It designates an object that holds an address. 
+Next, the expression *pt is not an identifier because it’s not a name. However, it does designate an object, 
+in this case the same object that entity designates. In general, as you may recall from
+Chapter 3 , “Data and C,” an expression that designates an object is called an lvalue.
+So entity is an identifier that is an lvalue, and *pt is an expression that is an lvalue.
+Along the samelines, the expression (ranks + 2 * entity) is neither an identifier (not a name) nor an lvalue
+(doesn’t designate the contents of a memory location). But the expression *(ranks + 2 *entity) 
+is an lvalue because it does designate the value of a particular memory location, the
+seventh element of the ranks array (rank[6]). The declaration of ranks , by the way, creates an object
+capable of holding ten ints , and each member of the array also is an object.
+
+If, as with all these examples, you can use the lvalue to change the value in an object, it’s a
+modifiable lvalue . Now consider this declaration:
+
+const char * pc = "Behold a string literal!";
+
+This causes the program to store the string literal contents in memory, and that array of character
+values is an object. Each character in the array also is an object, as it can be accessed
+individually. The declaration also creates an object having the identifier pc and holding the
+address of that string. The identifier pc is a modifiable lvalue because it can be reset to point to
+a different string. The const prevents you from altering the contents of a pointed-to string but
+not from changing which string is pointed to. So *pc , which designates the data object holding
+the 'B' character, is an lvalue, but not a modifiable lvalue. Similarly, the string literal itself,
+because it designates the object holding the character string, is an lvalue, but not a modifiable
+one.
+You can describe an object in terms of its storage duration , which is how long it stays in
+memory. You can describe an identifier used to access the object by its scope and its linkage ,
+which together indicate which parts of a program can use it. The different storage classes offer
+different combinations of scope, linkage, and storage duration. You can have identifiers that
+can be shared over several files of source code, identifiers that can be used by any function in
+one particular file, identifiers that can be used only within a particular function, and even identifiers
+that can be used only within a subsection of a function. You can have objects that exist
+for the duration of a program and objects that exist only while the function containing them is
+executing. With concurrent programming, you can have objects that exist for the duration of
+a particular thread. You also can store data in memory that is allocated and freed explicitly by
+means of function calls.
+
+Next, let’s investigate the meaning of the terms scope , linkage , and storage duration . After that,
+we’ll return to specific storage classes.
+
+#### Scope
+
+Scope describes the region or regions of a program that can access an identifier. A C variable
+has one of the following scopes: block scope, function scope, function prototype scope, or file
+scope . The program examples to date have used block scope almost exclusively for variables. A
+block , as you’ll recall, is a region of code contained within an opening brace and the matching
+closing brace. For instance, the entire body of a function is a block. Any compound statement
+within a function also is a block. A variable defined inside a block has block scope , and it is
+visible from the point it is defined until the end of the block containing the definition. Also,
+formal function parameters, even though they occur before the opening brace of a function,
+have block scope and belong to the block containing the function body. So the local variables
+we’ve used to date, including formal function parameters, have block scope. Therefore, the variables
+cleo and patrick in the following code both have block scope extending to the closing
+brace:
+
+double blocky(double cleo)  // cleo 
+{
+  double patrick = 0.0;
+   ...
+   return patrick;
+}
+
+Variables declared in an inner block have scope restricted just to that block:
+
+double blocky(double cleo)
+{
+  double patrick = 0.0;
+  int i;
+  for (i = 0; i < 10; i++)
+   {
+      double q = cleo * i; // start of scope for q
+      ...
+      patrick *= q;
+   }                       // end of scope for q
+   ...
+
+   return patrick;
+ }
+ 
+ 
+ C99 allowing you to declare variables anywhere in a block, Eg:
+ 
+ for (int i = 0; i < 10; i++)
+     printf("A C99 feature: i = %d", i);
+     
+     
+As part of this new feature, C99 expanded the concept of a block to include the code controlled
+by a for loop, while loop, do while loop, or if statement, even if no brackets are used. So in
+the previous for loop, the variable i is considered to be part of the for loop block. Therefore,
+its scope is limited to the for loop. After execution leaves the for loop, the program will no
+longer see that i .
+
+Function scope applies just to labels used with goto statements. This means that even if a label
+first appears inside an inner block in a function, its scope extends to the whole function. It
+would be confusing if you could use the same label inside two separate blocks, and function
+scope for labels prevents this from happening.
+Function prototype scope applies to variable names used in function prototypes, as in the following:
+
+int mighty(int mouse, double large);
+
+Function prototype scope runs from the point the variable is defined to the end of the prototype
+declaration. What this means is that all the compiler cares about when handling a function
+prototype argument is the types; the names you use, if any, normally don’t matter, and
+they needn’t match the names you use in the function definition. One case in which the
+names matter a little is with variable-length array parameters:
+
+void use_a_VLA(int n, int m, ar[n][m]);
+
+If you use names in the brackets, they have to be names declared earlier in the prototype.
+A variable with its definition placed outside of any function has file scope . A variable with file
+scope is visible from the point it is defined to the end of the file containing the definition. Take
+a look at this example:
+
+#include <stdio.h>
+int units = 0; /* a variable with file scope */
+void critic(void);
+int main(void)
+{
+...
+}
+
+void critic(void)
+{
+...
+}
+
+Here, the variable units has file scope, and it can be used in both main() and critic() .
+(More exactly, units has file scope with external linkage, a distinction we’ll cover in the next
+section.) Because they can be used in more than one function, file scope variables are also
+called global variables .
+
+
+#### Linkage
+Next, let’s look at linkage. A C variable has one of the following linkages: external linkage,
+internal linkage, or no linkage . Variables with block scope, function scope, or function prototype
+scope have no linkage. That means they are private to the block, function, or prototype in
+which they are defined. A variable with file scope can have either internal or external linkage.
+A variable with external linkage can be used anywhere in a multifile program. A variable with
+internal linkage can be used anywhere in a single translation unit.
+
+Some common short cuts are to use “file scope” for “file scope with internal linkage” and “global scope” or “program scope”
+for “file scope with external linkage.”
+
+Eg:
+
+int giants = 5; // file scope, external linkage
+static int dodgers = 3; // file scope, internal linkage
+int main()
+{
+...
+}
+...
+
+The variable giants can be used by other files that are part of the same program. The dodgers
+variable is private to this particular file, but can be used by any function in the file.
+
+
+#### Storage duration
+
+Scope and linkage describe the visibility of identifiers. Storage duration describes the persistence
+of the objects accessed by these identifiers. A C object has one of the following four storage
+durations: static storage duration, thread storage duration, automatic storage duration, or allocated
+storage duration .
+
+If an object has static storage duration, it exists throughout program execution. Variables with
+file scope have static storage duration. Note that for file scope variables, the keyword static
+indicates the linkage type, not the storage duration. A file scope variable declared using static
+has internal linkage, but all file scope variables, using internal linkage or external linkage, have
+static storage duration.
+
+Thread storage duration comes into play in concurrent programming, in which program execution
+can be divided into multiple threads. An object with thread storage duration exists from
+when it’s declared until the thread terminates. Such an object is created when a declaration
+that would otherwise create a file scope object is modified with the keyword Thread_local .
+When a variable is declared with this specifier, each thread gets its own private copy of that
+variable.
+
+Variables with block scope normally have automatic storage duration. These variables have
+memory allocated for them when the program enters the block in which they are defined, and
+the memory is freed when the block is exited. The idea is that memory used for automatic variables
+is a workspace or scratch pad that can be reused. For example, after a function call terminates,
+the memory it used for its variables can be used to hold variables for the next function
+that is called.
+
+Variable-length arrays provide a slight exception in that they exist from the point of declaration
+to the end of the block rather than from the beginning of the block to the end.
+The local variables we’ve used so far fall into the automatic category. For example, in the
+following code, the variables number and index come into being each time the bore() function
+is called and pass away each time the function completes:
+
+void bore(int number)
+{
+int index;
+for (index = 0; index < number; index++)
+puts("They don't make them the way they used to.\n");
+return 0;
+}
+
+It is possible, however, for a variable to have block scope but static storage duration. To create
+such a variable, declare it inside a block and add the keyword static to the declaration:
+void more(int number)
+
+{
+int index;
+static int ct = 0;
+...
+return 0;
+}
+
+Here the variable ct is stored in static memory; it exists from the time the program is loaded
+until the program terminates. But its scope is confined to the more() function block. Only
+while this function executes can the program use ct to access the object it designates.
+(However, one can allow indirect access by enabling the function to provide the address of the
+storage to other functions, for example, by a pointer parameter or return value.)
+C uses scope, linkage, and storage duration to define several storage schemes for variables. This
+book doesn’t cover concurrent programming, so we won’t go into that aspect. And we’ll discuss
+allocated storage later in this chapter. That leaves five storage classes: automatic, register, static
+with block scope, static with external linkage, and static with internal linkage. Table 12.1 lists
+the combinations. Now that we’ve covered scope, linkage, and storage duration, we can discuss
+these storage classes in more detail.
+________________________________________________________________________________________________________________________
+Storage Class           Duration       Scope          Linkage              How Declared
+________________________________________________________________________________________________________________________
+automatic                Automatic     Block            None               In a block
+
+register                 Automatic     Block            None               In a block with the keyword register
+
+static with
+external linkage         static        File            External            Outside of all functions
+
+static with
+internal linkage         Static        File             Internal           Outside of all functions with the keyword static
+
+
+static with no
+linkage                   Static        Block            None                In a block with thekeyword static
+___________________________________________________________________________________________________________________________
+
+
+#### Automatic variables
+
+
+
+#### Register variables
+
+#### Static variables with block scope
+
+#### Static variables with external linkage
+
+#### Static variables with internal linkage
+
+#### Multiple files
+
+#### Storage-class specifier roundup
+
+#### Storage-class and functions
+
+#### Which storage class
+
+### A random-number function and a static variable
+
+### Roll 'Em
+
+### Allocated memory: malloc() and free()
+
+#### The importance of free()
+#### The calloc() function
+####  Dynamic memory allocation and variable-length arrays
+####  Storage classes and dynamic memory allocation
+
+### ANSI C type qualitiers
+
+#### The const type qualifier
+
+#### The volatile type qualifier
+
+#### The restrict type qualifier
+
+#### The atomic type qualifier
+
+#### New places for old keywords 
+
+### Key concepts
+
+### Summary
+
