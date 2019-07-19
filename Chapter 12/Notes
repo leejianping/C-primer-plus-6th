@@ -446,15 +446,272 @@ linkage.
 
 #### Static variables with external linkage
 
+A static variable with external linkage has file scope, external linkage, and static storage duration.
+This class is sometimes termed the external storage class , and variables of this type are called external variables .
+Declarations look like this:
+
+
+int Errupt;            /* externally defined variable */
+double Up[100];        /* externally defined array */
+extern char Coal;      /* mandatory declaration if */
+                       /* Coal defined in another file */
+void next(void);
+int main(void)
+{
+   extern int Errupt; /* optional declaration */
+   extern double Up[]; /* optional declaration */
+   ...
+}
+
+void next(void)
+{
+...
+}
+
+
+The following three examples show four possible combinations of external and automatic variables. 
+Example 1 contains one external variable: Hocus . It is known to both main() and magic() .
+
+/* Example 1 */
+int Hocus;
+int magic();
+int main(void)
+{
+  extern int Hocus; // Hocus declared external
+  ...
+}
+
+int magic()
+{
+  extern int Hocus; // same Hocus as above
+  ...
+}
+
+Example 2 has one external variable, Hocus , known to both functions. This time, magic()
+knows it by default.
+/* Example 2 */
+int Hocus;
+int magic();
+int main(void)
+{
+extern int Hocus; // Hocus declared external
+...
+}
+int magic()
+{
+// Hocus not declared but is known
+...
+}
+
+In Example 3, four separate variables are created. The Hocus variable in main() is automatic
+by default and is local to main . The Hocus variable in magic() is automatic explicitly and is
+known only to magic() . The external Hocus variable is not known to main() or magic()
+but would be known to any other function in the file that did not have its own local Hocus .
+Finally, Pocus is an external variable known to magic() but not to main() because Pocus
+follows main() .
+
+/* Example 3 */
+int Hocus;
+int magic();
+int main(void)
+{
+   int Hocus; // Hocus declared, is auto by default
+  ...
+}
+
+int Pocus;
+
+int magic()
+{
+  auto int Hocus; // local Hocus declared automatic
+  ...
+}
+
+These examples illustrate the scope of external variables: from the point of declaration to the
+end of the file. They also illustrate the lifetimes of variables. The external Hocus and Pocus
+variables persist as long as the program runs, and, because they aren’t confined to any one
+function, they don’t fade away when a particular function returns.
+
+##### Initialized external variables
+   
+Like automatic variables, external variables can be initialized explicitly. Unlike automatic variables,
+external variables are initialized automatically to zero if you don’t initialize them. This
+rule applies to elements of an externally defined array, too.
+
+int x = 10; // ok, 10 is constant
+int y = 3 + 20; // ok, a constant expression
+size_t z = sizeof(int); // ok, a constant expression
+int x2 = 2 * x; // not ok, x is a variable
+int n;           // equivelent to int n = 0
+
+##### Using an external variable
+
+/* global.c -- uses an external variable */
+#include <stdio.h>
+int units = 0;            /* an external variable */
+void critic(void);
+int main(void)
+{
+  extern int units;     /* an optional redeclaration */
+  printf("How many pounds to a firkin of butter?\n");
+  scanf("%d", &units);
+  while ( units != 56)
+  critic();
+  printf("You must have looked it up!\n");
+  return 0;
+}
+
+void critic(void)
+{
+  /* optional redeclaration omitted */
+  printf("No luck, my friend. Try again.\n");
+  scanf("%d", &units);
+}
+
+So both the main() function and the critic() function use the identifier units to access the same variable. 
+In C terminology, we say that units has file scope, external linkage, and static storage duration.
+
+
+
+##### Definitions and declarations
+Let’s take a longer look at the difference between defining a variable and declaring it.
+
+int tern = 1;      /* tern defined */
+main()
+{
+external int tern;   /* use a tern defined elsewhere */
+
+The first declaration causes storage to be set aside for the variable.
+It constitutes a definition of the variable. The second declaration merely tells the compiler
+to use the tern variable that has been created previously, so it is not a definition. The first
+declaration is called a defining declaration , and the second is called a referencing declaration. The
+keyword extern indicates that a declaration is not a definition because it instructs the compiler to look elsewhere.
+
+Suppose you do this:
+extern int tern;
+int main(void)
+{
+
+The compiler will assume that the actual definition of tern is somewhere else in your program,
+perhaps in another file. This declaration does not cause space to be allocated. Therefore, don’t
+use the keyword extern to create an external definition; use it only to refer to an existing external definition.
+
+An external variable can be initialized only once, and that must occur when the variable is
+defined. Suppose you have this:
+
+// file one.c
+char permis = 'N';
+...
+// file two.c
+extern char permis = 'Y'; /* error */
 
 
 #### Static variables with internal linkage
 
+Variables of this storage class have static storage duration, file scope, and internal linkage. You
+create one by defining it outside of any function (just as with an external variable) with the
+storage class specifier static :
 
+static int svil = 1; // static variable, internal linkage
+int main(void)
+{
+
+The ordinary external variable can be used by functions in any file that’s part of the program, 
+but the static variable with internal linkage can be used only by functions in the same file.
+You can redeclare any file scope variable within a function by using the storage class specifier extern .
+Such a declaration doesn’t change the linkage. Consider the following code:
+
+int traveler = 1;          // external linkage
+static int stayhome = 1;   // internal linkage
+int main()
+{
+   extern int traveler;    // use global traveler
+   extern int stayhome;    // use global stayhome
+   ...
+   
+Both traveler and stayhome are global for this particular translation unit, but only traveler
+can be used by code in other translation units. The two declarations using extern document
+that main() is using the two global variables, but stayhome continues to have internal linkage.
 
 #### Multiple files
 
+The difference between internal linkage and external linkage is important only when you have
+a program built from multiple translation units, so let’s take a quick look at that topic.
+
+Complex C programs often use several separate files of source code. Sometimes these files
+might need to share an external variable. The C way to do this is to have a defining declaration
+in one file and referencing declarations in the other files. That is, all but one declaration (the
+defining declaration) should use the extern keyword, and only the defining declaration should
+be used to initialize the variable.
+
+Note that an external variable defined in one file is not available to a second file unless it is
+also declared (by using extern ) in the second file. An external declaration by itself only makes
+a variable potentially available to other files.
+
+Historically, however, many compilers have followed different rules in this regard. Many Unix
+systems, for example, enable you to declare a variable in several files without using the extern
+keyword, provided that no more than one declaration includes an initialization. If there is a
+declaration with an initialization, it is taken to be the definition.
+
+
 #### Storage-class specifier roundup
+
+You may have noticed that the meaning of the keywords static and extern depends on the
+context. The C language has six keywords that are grouped together as storage-class specifiers.
+They are auto , register , static , extern , Thread_local , and typedef . The typedef
+keyword doesn’t say anything about memory storage, but it is thrown in for syntax reasons. In
+particular, in most cases you can use no more than one storage-class specifier in a declaration,
+so that means you can’t use one of the other storage-class specifiers as part of a typedef . The
+one exception is that Thread_local may be used together with static and extern .
+
+The auto specifier indicates a variable with automatic storage duration. It can be used only in
+declarations of variables with block scope, which already have automatic storage duration, so
+its main use is documenting intent.
+
+The register specifier also can be used only with variables of block scope. It puts a variable
+into the register storage class, which amounts to a request to minimize the access time for that
+variable. It also prevents you from taking the address of the variable.
+
+The static specifier creates an object with static duration, one that’s created when the
+program is loaded and ends when the program terminates. If static is used with a file scope
+declaration, scope is limited to that one file. If static is used with a block scope declaration,
+scope is limited to that block. Thus, the object exists and retains its value as long as the
+program is running, but it can be accessed by the identifier only when code within the block
+is being executed. A static variable with block scope has no linkage. A static variable with file
+scope has internal linkage.
+
+The extern specifier indicates that you are declaring a variable that has been defined elsewhere.
+If the declaration containing extern has file scope, the variable referred to must have
+external linkage. If the declaration containing extern has block scope, the referred-to variable
+can have either external linkage or internal linkage, depending on the defining declaration for
+that variable.
+
+
+  Summary: Storage Classes
+Automatic variables have block scope, no linking, and automatic storage duration. They are
+local and private to the block (typically a function) in which they are defined. Register variables
+have the same properties as automatic variables, but the compiler may use faster memory or a
+register to store them. You can’t take the address of a register variable.
+
+Variables with static storage duration can have external linkage, internal linkage, or no linkage.
+When a variable is declared external to any function in a file, it’s an external variable and has
+file scope, external linkage, and static storage duration. If you add the keyword static to such
+a declaration, you get a variable with static storage duration, file scope, and internal linkage.
+If you declare a variable inside a function and use the keyword static , the variable has static
+storage duration, block scope, and no linkage.
+
+Memory for a variable with automatic storage duration is allocated when program execution
+enters the block containing the variable declaration and is freed when the block is exited. If
+uninitialized, such a variable has a garbage value. Memory for a variable with static storage
+duration is allocated at compile time and lasts as long as the program runs. If uninitialized,
+such a variable is set to 0.
+
+A variable with block scope is local to the block containing the declaration. A variable with file
+scope is known to all functions in a file (or translation unit) following its declaration. If a file
+scope variable has external linkage, it can be used by other translation units in the program.
+If a file scope variable has internal linkage, it can be used just within the file in which it is
+declared.
+
 
 #### Storage-class and functions
 
