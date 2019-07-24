@@ -939,16 +939,347 @@ memory.
 
 ### ANSI C type qualitiers
 
+You’ve seen that a variable is characterized by both its type and its storage class. C90 added
+two more properties: constancy and volatility. These properties are declared with the keywords
+const and volatile , which create qualified types . The C99 standard added a third qualifier,
+restrict , designed to facilitate compiler optimizations. And C11 adds a fourth, Atomic . C11
+provides an optional library, managed by stdatomic.h , to support concurrent programming,
+and Atomic is part of that optional support.
+C99 granted type qualifiers a new property—they now are idempotent! Although this sounds
+like a powerful claim, all it really means is that you can use the same qualifier more than once
+in a declaration, and the superfluous ones are ignored:
+
+const const const int n = 6; // same as const int n = 6;
+
+This makes it possible, for example, for the following sequence to be accepted:
+
+typedef const int zip;
+const zip q = 8;
+
+
 #### The const type qualifier
+To review, the const keyword in a declaration establishes a variable whose value cannot be modified by assignment 
+or by incrementing or decrementing. On an ANSI-compliant compiler, the code 
+
+  const int nochange;    /* qualifies m as being constant */
+  nochange = 12;         /* not allowed */
+
+should produce an error message. You can, however, initialize a const variable. Therefore, the
+following code is fine:
+
+const int nochange = 12; /* ok */
+
+You can use the const keyword to, for example, create an array of data that the program can’t alter:
+
+     const int days1[12] = {31,28,31,30,31,30,31,31,30,31,30,31};
+     
+##### Using const with Pointers and Parameter Declarations
+
+Using the const keyword when declaring a Pointer is complicated because you have to distinguish 
+between making the pointer itself const and making the value that is pointed to const . The declaration
+
+     const float * pf;     /* pf points to a constant float value */
+
+establishes that pf points to a value that must remain constant. The value of pf itself can
+be changed. For example, it can be set to point at another const value. In contrast, the declaration
+
+     float * const pt;     /* pt is a const pointer */
+    
+says that the pointer pt itself cannot have its value changed. It must always point to the same
+address, but the pointed-to value can change. Finally, the declaration
+     const float * const ptr;
+means both that ptr must always point to the same location and that the value stored at the location must not change.
+There is a third location in which you can place const :
+
+       float const * pfc;   // same as const float * pfc;
+
+As the comment indicates, placing const after the type name and before the * means that the
+pointer can’t be used to change the pointed-to value. In short, a const anywhere to the left
+of the * makes the data constant; and a const to the right of the * makes the pointer itself constant.
+
+If the pointer is used to alter data in the calling function, the const keyword isn’t used. For example, 
+the ANSI C declaration for strcat() is this:
+
+char *strcat(char * restrict s1, const char * restrict s2);
+
+Recall that strcat() adds a copy of the second string to the end of the first string. This modifies
+the first string, but leaves the second string unchanged. The declaration reflects this. We’ll
+get back to the role of restrict in a short while.
+
+##### Using const with Global Data
+Recall that using global variables is considered a risky approach because it exposes data to being
+mistakenly altered by any part of a program. That risk disappears if the data is constant, so it is
+perfectly reasonable to use global variables with the const qualifier. You can have const variables,
+const arrays, and const structures.
+
+One area that requires care, however, is sharing const data across files. There are two strategies
+you can use. The first is to follow the usual rules for external variables—use defining declarations
+in one file and reference declarations (using the keyword extern ) in the other files:
+
+    /* file1.c -- defines some global constants */
+    const double PI = 3.14159;
+    const char * MONTHS[12] =
+    {"January", "February", "March", "April", "May", "June", "July",
+      "August", "September", "October", "November", "December"};
+      
+    /* file2.c -- use global constants defined elsewhere */
+    extern const double PI;
+    extern const * MONTHS[];
+    
+The second approach is to place the constants in an include file. Here, you must take the additional
+step of using the static external storage class:
+
+    /* constant.h -- defines some global constants */
+    static const double PI = 3.14159;
+    static const char * MONTHS[12] =
+    {"January", "February", "March", "April", "May", "June", "July",
+    "August", "September", "October", "November", "December"};
+    
+    /* file1.c -- use global constants defined elsewhere */
+    #include "constant.h" 
+    
+    /* file2.c -- use global constants defined elsewhere */
+    #include "constant.h"
+
+If you don’t use the keyword static , including constant.h in file1.c and in file2.c
+would result in each file having a defining declaration of the same identifier, which is not
+supported by the C standard. (Some compilers, however, do allow it.) By making each identifier
+static external, you actually give each file a separate copy of the data. That wouldn’t work if the
+files are supposed to use the data to communicate with one another because each file would see
+only its own copy. Because the data is constant (by using the const keyword) and identical (by
+having both files include the same header file), however, that’s not a problem.
+
+The advantage of the header file approach is that you don’t have to remember to use defining
+declarations in one file and reference declarations in the next; all files simply include the same
+header file. The disadvantage is that the data is duplicated. For the preceding examples, that’s
+not a real problem, but it might be one if your constant data includes enormous arrays.
+
 
 #### The volatile type qualifier
 
+The volatile qualifier tells the compiler that a variable can have its value altered by agencies
+other than the program. It is typically used for hardware addresses and for data shared with
+other programs or threads running simultaneously. For example, an address might hold the
+current clock time. The value at that address changes as time changes, regardless of what your
+program is doing. Or an address could be used to receive information transmitted from, say,
+another computer.
+The syntax is the same as for const :
+
+    volatile int loc1;     /* loc1 is a volatile location */
+    volatile int * ploc;   /* ploc points to a volatile location */
+    
+You may think that volatile is an interesting concept, but you might be wondering why the
+ANSI committee felt it necessary to make volatile a keyword. The reason is that it facilitates
+compiler optimization. Suppose, for example, you have code like this:
+
+    val1 = x;
+    /* some code not using x */
+    val2 = x;
+
+A smart (optimizing) compiler might notice that you use x twice without changing its value. It
+would temporarily store the x value in a register. Then, when x is needed for val2 , it can save
+time by reading the value from a register instead of from the original memory location. This
+procedure is called caching . Ordinarily, caching is a good optimization, but not if x is changed
+between the two statements by some other agency. If there were no volatile keyword, a
+compiler would have no way of knowing whether this might happen. Therefore, to be safe,
+the compiler couldn’t cache. That was the pre-ANSI situation. Now, however, if the volatile
+keyword is not used in the declaration, the compiler can assume that a value hasn’t changed
+between uses, and it can then attempt to optimize the code.
+A value can be both const and volatile . For example, the hardware clock setting normally
+should not be changed by the program, making it const , but it is changed by an agency other
+than the program, making it volatile . Just use both qualifiers in the declaration, as shown
+here; the order doesn’t matter:
+
+     volatile const int loc;
+     const volatile int * ploc;
+      
+
 #### The restrict type qualifier
+
+The restrict keyword enhances computational support by giving the compiler permission
+to optimize certain kinds of code. It can be applied only to pointers, and it indicates that a
+pointer is the sole initial means of accessing a data object. To see why this is useful, we need to
+look at a few examples. Consider the following:
+
+    int ar[10];
+    int * restrict restar = (int *) malloc(10 * sizeof(int));
+    int * par = ar;
+
+Here, the pointer restar is the sole initial means of access to the memory allocated by
+malloc() . Therefore, it can be qualified with the keyword restrict . The pointer par ,
+however, is neither the initial nor the sole means of access to the data in the ar array, so it
+cannot be qualified as restrict .
+Now consider the following rather artificial example, in which n is an int :
+
+    for (n = 0; n < 10; n++)
+    {
+      par[n] += 5;
+      restar[n] += 5;
+      ar[n] *= 2;
+      par[n] += 3;
+      restar[n] += 3;
+    }
+    
+Knowing that restar is the sole initial means of access to the block of data it points to, the
+compiler can replace the two statements involving restar with a single statement having the
+same effect:
+
+    restar[n] += 8;   /* ok replacement */
+
+It would be a computational error, however, to condense the two statements involving par
+into one:
+
+    par[n] += 8;    / * gives wrong answer */
+
+The reason it gives the wrong answer is that the loop uses ar to change the value of the data
+between the two times par accesses the same data. 
+
+Without the restrict keyword, the compiler has to assume the worse case; namely, that
+some other identifier might have changed the data in between two uses of a pointer. With the
+restrict keyword used, the compiler is free to look for computational shortcuts.
+
+You can use the restrict keyword as a qualifier for function parameters that are pointers.
+This means that the compiler can assume that no other identifiers modify the pointed-to data
+within the body of the function and that the compiler can try optimizations it might not
+otherwise use. For example, the C library has two functions for copying bytes from one location
+to another. Under C99, they have these prototypes:
+
+void * memcpy(void * restrict s1, const void * restrict s2, size_t n);
+void * memmove(void * s1, const void * s2, size_t n);
+
+Each one copies n bytes from location s2 to location s1 . The memcpy() function requires that
+there be no overlap between the two locations, but memmove() doesn’t have that requirement.
+Declaring s1 and s2 as restrict means each pointer is a sole means of access, so they can’t
+access the same block of data. This matches the requirement that there be no overlap. The
+memmove() function, which does allow overlap, has to be more careful about copying data so
+that it doesn’t overwrite data before it is used.
+
+The keyword restrict has two audiences. One is the compiler, and it tells the compiler it is
+free to make certain assumptions concerning optimization. The other audience is the user, and
+it tells the user to use only arguments that satisfy the restrict requirements. In general, the
+compiler can’t check whether you obey this restriction, but you flout it at your own risk.
 
 #### The atomic type qualifier
 
+Concurrent programming divides program execution into threads that may be executed in
+parallel. This creates several programming challenges, including how to manage different
+threads that access the same data. C11 provides, as an option and not a requirement, management
+methods set up by the optional header files stdatomic.h and threads.h . One aspect is
+the concept of an atomic type for which access is controlled by various macro functions. While
+a thread performs an atomic operation on an object of atomic type, other threads won’t access
+that object. For instance, something like
+
+    int hogs;   // regular declaration
+    hogs = 12;   // regular assignment
+
+ could be replaced by the following:
+
+    Atomic int hogs;   // hogs an atomic variable
+    atomic_store(&hogs, 12);   // macro from stdatomic.h
+
+Here, the storing of the value 12 in hogs is an atomic process during which other threads
+won’t access hogs .
+At the time of this writing, compiler support for this feature is anticipated.
+
 #### New places for old keywords 
+
+C99 allows you to place the type qualifiers and the storage class qualifier static inside the
+initial brackets of a formal parameter in a function prototype and function header. In the case
+of the type qualifiers, this provides an alternative syntax for an existing capability. For example,
+here is a declaration with the older syntax:
+
+  void ofmouth(int * const a1, int * restrict a2, int n); // older style
+
+It says that a1 is a const pointer to int , which, as you’ll recall, means that the pointer is
+constant, not the data to which it points. It also indicates that a2 is a restricted pointer, as
+described in the preceding section. The new and equivalent syntax is
+
+  void ofmouth(int a1[const], int a2[restrict], int n); // allowed by C99
+
+Basically, the new rule allows you to use these two qualifiers with either pointer or array notation
+in declaring function parameters.
+The case for static is different because it introduces a new and unrelated use for this keyword.
+Instead of indicating the scope or linkage of a static storage variable, the new use is to tell the
+compiler how a formal parameter will be used. For example, consider this prototype:
+
+    double stick(double ar[static 20]);
+
+This use of static indicates that the actual argument in a function call will be a pointer to
+the first element of an array having at least 20 elements. The purpose of this is to enable the
+compiler to use that information to optimize its coding of the function. Why use the keyword
+in such a different fashion? The C standards committee is reluctant to create a new keyword
+because that would invalidate old programs that use that word as an identifier, so if they can
+squeeze a new use out of an old keyword, they will.
+
+As with restrict , the keyword static has two audiences. One is the compiler, and it tells the
+compiler it is free to make certain assumptions concerning optimization. The other audience is
+the user, and it tells the user to only provide arguments that satisfy the static requirements.
 
 ### Key concepts
 
+C provides several models for managing memory. You should become familiar with the various
+choices. You also need to develop a sense of when to choose the various types. Most of the
+time, the automatic variable is the best choice. If you decide to use another type, you should
+have a good reason. For communicating between functions, it’s usually better to use automatic
+variables, function parameters, and return values rather than global variables. On the other
+hand, global variables are particularly useful for constant data.
+
+You should try to understand the properties of static memory, automatic memory, and allocated
+memory. In particular, be aware that the amount of static memory used is determined
+at compile time, and that static data is loaded into memory when the program is loaded into
+memory. Automatic variables are allocated and freed as the program runs, so the amount of
+memory used by automatic variables changes while a program executes. You can think of automatic
+memory as a rewriteable workspace. Allocated memory also grows and shrinks, but, in
+this case, the process is controlled by function calls rather than happening automatically.
+
 ### Summary
+
+The memory used to store data in a program can be characterized by storage duration, scope,
+and linkage. Storage duration can be static, automatic, or allocated. If static, memory is allocated
+at the start of program execution and persists as long as the program is running. If automatic,
+memory for a variable is allocated when program execution enters the block in which
+the variable is defined and is freed when the block is exited. If allocated, memory is allocated
+by calling malloc() (or a related function) and freed by calling the free() function.
+Scope determines which parts of a program can access the data. A variable defined outside of
+any function has file scope and is visible to any function defined after the variable’s declaration.
+A variable defined inside a block or as a function parameter has block scope and is visible
+just in that block and any blocks nested in it.
+Linkage describes the extent to which a variable defined in one unit of a program can be linked
+to elsewhere. Variables with block scope, being local, have no linkage. Variables with file scope
+can have internal linkage or external linkage. Internal linkage means the variable can be used
+only in the file containing the definition. External linkage means the variable also can be used
+in other files.
+The following are C’s five storage classes (excluding thread concepts):
+  ■ Automatic— A variable declared in a block (or as a parameter in a function header)
+    with no storage class modifier, or with the auto storage class modifier, belongs to the
+    automatic storage class. It has automatic storage duration, block scope, and no linkage.
+    Its value, if uninitialized, is not undetermined.
+  ■ Register— A variable declared in a block (or as a parameter in a function header) with
+    the register storage class modifier belongs to the register storage class. It has automatic
+    storage duration, block scope, and no linkage, and its address cannot be taken. Declaring
+    a variable as a register variable is a hint to the compiler to provide the fastest access
+    possible. Its value, if uninitialized, is not undetermined.
+  ■ Static, no linkage— A variable declared in a block with the static storage class modifier
+    belongs to the “static, no linkage” storage class. It has static storage duration, block
+    scope, and no linkage. It is initialized just once, at compile time. If not initialized
+    explicitly, its bytes are set to 0.
+  ■ Static, external linkage— A variable defined external to any function and without using
+    the static storage class modifier belongs to the “static, external linkage” storage class.
+    It has static storage duration, file scope, and external linkage. It is initialized just once, at
+    compile time. If not initialized explicitly, its bytes are set to 0.
+  ■ Static, internal linkage— A variable defined external to any function and using the
+    static storage class modifier belongs to the “static, internal linkage” storage class. It
+    has static storage duration, file scope, and internal linkage. It is initialized just once, at
+    compile time. If not initialized explicitly, its bytes are set to 0.
+    
+Allocated memory is provided by using the malloc() (or related) function, which returns a
+pointer to a block of memory having the requested number of bytes. This memory can be made
+available for reuse by calling the free() function, using the address as the argument.
+
+The type qualifiers are const , volatile , and restrict . The const specifier qualifies data as
+being constant. When used with pointers, const can indicate that the pointer itself is constant
+or that the data it points to is constant, depending on the placement of const in the declaration.
+The volatile specifier indicates that data may be altered by processes other than the
+program. Its purpose is to warn the compiler to avoid optimizations that assume otherwise.
+The restrict specifier is also provided for reasons of optimization. A pointer qualified with
+restrict is identified as providing the only access to a block of data.
